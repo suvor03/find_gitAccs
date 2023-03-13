@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск репозиториев на GitHub</title>
+</head>
+<body>
+<h1>Поиск репозиториев на GitHub</h1>
+<form id="search-form">
+    <input type="text" id="search-input" placeholder="Введите подстроку для поиска">
+    <button type="submit">Найти</button>
+</form>
+<div id="results-list"></div>
+<script>
+    const API_URL = 'https://api.github.com/search/repositories';
+
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const resultsList = document.getElementById('results-list');
+
+    searchForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const query = searchInput.value.trim();
+        if (query.length < 3) {
+            alert('Введите не менее 3 символов для поиска');
+            return;
+        }
+
+        const url = `${API_URL}?q=${query}&per_page=10`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.items.length === 0) {
+                resultsList.innerHTML = '<p>Ничего не найдено</p>';
+                return;
+            }
+
+            const results = data.items.map((item) => {
+                return `
+              <li>
+                <a href="${item.html_url}" target="_blank">${item.name}</a>
+                <p>${item.description}</p>
+                <p>Language: ${item.language}</p>
+                <p>Stars: ${item.stargazers_count}</p>
+              </li>
+            `;
+            });
+
+            resultsList.innerHTML = `<ul>${results.join('')}</ul>`;
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка при выполнении запроса');
+        }
+    });
+</script>
+</body>
+</html>
